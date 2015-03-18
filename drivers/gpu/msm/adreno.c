@@ -1387,7 +1387,7 @@ static int _adreno_start(struct adreno_device *adreno_dev)
 	struct adreno_gpudev *gpudev = ADRENO_GPU_DEVICE(adreno_dev);
 	int status = -EINVAL, ret;
 	unsigned int state = device->state;
-	bool regulator_left_on;
+	unsigned int regulator_left_on = 0;
 	unsigned int pmqos_wakeup_vote = device->pwrctrl.pm_qos_wakeup_latency;
 	unsigned int pmqos_active_vote = device->pwrctrl.pm_qos_active_latency;
 

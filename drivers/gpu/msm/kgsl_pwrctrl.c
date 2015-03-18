@@ -2589,7 +2589,6 @@ static int _wake(struct kgsl_device *device)
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_ON);
 		mod_timer(&device->idle_timer, jiffies +
 				device->pwrctrl.interval_timeout);
-		del_timer_sync(&device->pwrctrl.deep_nap_timer);
 		break;
 	default:
 		KGSL_PWR_WARN(device, "unhandled state %s\n",
