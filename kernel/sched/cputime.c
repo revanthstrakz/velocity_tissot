@@ -140,7 +140,7 @@ static inline void task_group_account_field(struct task_struct *p, int index,
 	 */
 	__this_cpu_add(kernel_cpustat.cpustat[index], tmp);
 
-	cpuacct_account_field(p, index, tmp);
+	cgroup_account_cputime_field(p, index, tmp);
 }
 
 /*
@@ -465,8 +465,14 @@ EXPORT_SYMBOL_GPL(vtime_common_account_irq_enter);
 #endif /* CONFIG_VIRT_CPU_ACCOUNTING */
 
 
-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-void task_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st)
+void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
+		    u64 *ut, u64 *st)
+{
+	*ut = curr->utime;
+	*st = curr->stime;
+}
+
+void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st)
 {
 	*ut = p->utime;
 	*st = p->stime;
@@ -590,7 +596,8 @@ drop_precision:
  * Normally a caller will only go through this loop once, or not
  * at all in case a previous caller updated counter the same jiffy.
  */
-static void cputime_advance(cputime_t *counter, cputime_t new)
+void cputime_adjust(struct task_cputime *curr, struct prev_cputime *prev,
+		    u64 *ut, u64 *st)
 {
 	cputime_t old;
 
