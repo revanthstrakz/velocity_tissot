@@ -22,15 +22,6 @@
 #include <linux/seq_file.h>
 #include <linux/kernfs.h>
 #include <linux/wait.h>
-#include <linux/jump_label.h>
-#include <linux/types.h>
-#include <linux/ns_common.h>
-#include <linux/nsproxy.h>
-#include <linux/user_namespace.h>
-#include <linux/refcount.h>
-#include <linux/kernel_stat.h>
-
-#include <linux/cgroup-defs.h>
 
 #ifdef CONFIG_CGROUPS
 
@@ -954,82 +945,8 @@ static inline int cgroup_attach_task_all(struct task_struct *from,
 	return 0;
 }
 
-static inline void cgroup_path_from_kernfs_id(const union kernfs_node_id *id,
-	char *buf, size_t buflen) {}
-#endif /* !CONFIG_CGROUPS */
-
-/*
- * Basic resource stats.
- */
-#ifdef CONFIG_CGROUPS
-
-#ifdef CONFIG_CGROUP_CPUACCT
-void cpuacct_charge(struct task_struct *tsk, u64 cputime);
-void cpuacct_account_field(struct task_struct *tsk, int index, u64 val);
-#else
-static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
-static inline void cpuacct_account_field(struct task_struct *tsk, int index,
-					 u64 val) {}
-#endif
-
-void __cgroup_account_cputime(struct cgroup *cgrp, u64 delta_exec);
-void __cgroup_account_cputime_field(struct cgroup *cgrp,
-				    enum cpu_usage_stat index, u64 delta_exec);
-
-static inline void cgroup_account_cputime(struct task_struct *task,
-					  u64 delta_exec)
-{
-	struct cgroup *cgrp;
-
-	cpuacct_charge(task, delta_exec);
-
-	rcu_read_lock();
-	cgrp = task_dfl_cgroup(task);
-	if (cgroup_parent(cgrp))
-		__cgroup_account_cputime(cgrp, delta_exec);
-	rcu_read_unlock();
-}
-
-static inline void cgroup_account_cputime_field(struct task_struct *task,
-						enum cpu_usage_stat index,
-						u64 delta_exec)
-{
-	struct cgroup *cgrp;
-
-	cpuacct_account_field(task, index, delta_exec);
-
-	rcu_read_lock();
-	cgrp = task_dfl_cgroup(task);
-	if (cgroup_parent(cgrp))
-		__cgroup_account_cputime_field(cgrp, index, delta_exec);
-	rcu_read_unlock();
-}
-
-#else	/* CONFIG_CGROUPS */
-
-static inline void cgroup_account_cputime(struct task_struct *task,
-					  u64 delta_exec) {}
-static inline void cgroup_account_cputime_field(struct task_struct *task,
-						enum cpu_usage_stat index,
-						u64 delta_exec) {}
-
-#endif	/* CONFIG_CGROUPS */
-
-/*
- * sock->sk_cgrp_data handling.  For more info, see sock_cgroup_data
- * definition in cgroup-defs.h.
- */
-#ifdef CONFIG_SOCK_CGROUP_DATA
-
-#if defined(CONFIG_CGROUP_NET_PRIO) || defined(CONFIG_CGROUP_NET_CLASSID)
-extern spinlock_t cgroup_sk_update_lock;
-#endif
-
-void cgroup_sk_alloc_disable(void);
-void cgroup_sk_alloc(struct sock_cgroup_data *skcd);
-void cgroup_sk_free(struct sock_cgroup_data *skcd);
-
-static inline struct cgroup *sock_cgroup_ptr(struct sock_cgroup_data *skcd)
+static inline int subsys_cgroup_allow_attach(struct cgroup_subsys_state *css,
+					     void *tset)
 {
 	return -EINVAL;
 }

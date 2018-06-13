@@ -9,10 +9,10 @@
 #include <linux/irq_work.h>
 #include <linux/tick.h>
 #include <linux/slab.h>
-#include <linux/cgroup.h>
 
 #include "cpupri.h"
 #include "cpudeadline.h"
+#include "cpuacct.h"
 
 struct rq;
 struct cpuidle_state;
