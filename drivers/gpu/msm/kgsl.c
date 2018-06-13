@@ -1209,8 +1209,7 @@ kgsl_sharedmem_find(struct kgsl_process_private *private, uint64_t gpuaddr)
 	spin_lock(&private->mem_lock);
 	idr_for_each_entry(&private->mem_idr, entry, id) {
 		if (GPUADDR_IN_MEMDESC(gpuaddr, &entry->memdesc)) {
-			if (!entry->pending_free)
-				ret = kgsl_mem_entry_get(entry);
+			ret = kgsl_mem_entry_get(entry);
 			break;
 		}
 	}
@@ -4052,7 +4051,7 @@ static void kgsl_core_exit(void)
 static int __init kgsl_core_init(void)
 {
 	int result = 0;
-	struct sched_param param = { .sched_priority = 6 };
+	struct sched_param param = { .sched_priority = 2 };
 
 	/* alloc major and minor device numbers */
 	result = alloc_chrdev_region(&kgsl_driver.major, 0, KGSL_DEVICE_MAX,
